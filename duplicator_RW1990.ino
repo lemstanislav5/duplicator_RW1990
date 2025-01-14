@@ -1,7 +1,6 @@
 #define _LCD_TYPE 1
 #include <OneWire.h>                                // Библиотека
-#include <OLED_I2C.h> 
-OLED  myOLED(16, 2); // SDA - 8pin, SCL - 9pin
+
 extern uint8_t RusFont[]; // Русский шрифт
 
 #define pin 10                                      // D10: пин данных (центральный) для подлючения лузы iButton (зелёный провод у лузы DS9092)
@@ -26,7 +25,6 @@ int readflag = 0;                                   // Вытаскиваем и
 
 
 void setup() {  
-  myOLED.begin();
 
 
                                     // Функция инициализации, выполняется однократно при запуске Ардуинки
@@ -135,7 +133,6 @@ void theKeyIsWrittenDown() {
 }
 
 void loop() {
-  myOLED.print("Heccrbq ihban", CENTER, 0); // Выводим надпись "Русский язык"
 
 
 
