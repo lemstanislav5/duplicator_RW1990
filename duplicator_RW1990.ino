@@ -18,7 +18,7 @@ BluetoothSerial SerialBT;
 OneWire ibutton(pin);                  
 
 // ----------------------------------------------
-Class KeyDuplicator 
+Class eyDuplicator 
 {
     private:
       byte newKey[8];
@@ -28,16 +28,20 @@ Class KeyDuplicator
       {
         newKey = startKey;
       }
-      void setNewKey(byte startKey[8]){
+      void setNewKey(byte startKey[8])
+      {
 
       }
-      byte getNewKey(){
+      byte getNewKey()
+      {
 
       }
-      void setPrevKey(byte startKey[8]){
+      void setPrevKey(byte startKey[8])
+      {
 
       }
-      byte getPrevKey(){
+      byte getPrevKey()
+      {
 
       }
 
@@ -141,14 +145,14 @@ void theKeyIsWrittenDown() {
 
 void loop() {
   // Для Bluetooth HC05 ------------------------------------------------
-  if (SerialBT.available()) {
-    char c = SerialBT.read();                       // читаем из software-порта
-    Serial.print(c);                                // пишем в hardware-порт
-    SerialBT.write('hello');                        // пишем в software-порт
-  }
-  if (Serial.available()) {
-    char c = Serial.read();                         // читаем из hardware-порта
-    SerialBT.write(c);                              // пишем в software-порт
+  // if (SerialBT.available()) {
+  //   char c = SerialBT.read();                       // читаем из software-порта
+  //   Serial.print(c);                                // пишем в hardware-порт
+  //   SerialBT.write('hello');                        // пишем в software-порт
+  // }
+  // if (Serial.available()) {
+  //   char c = Serial.read();                         // читаем из hardware-порта
+  //   SerialBT.write(c);                              // пишем в software-порт
   }
   // Для Bluetooth HC05 ------------------------------------------------
 
