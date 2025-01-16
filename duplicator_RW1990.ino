@@ -1,13 +1,28 @@
+#include "BluetoothSerial.h"
+
+String device_name = "BTMonitor";
+
+// Check if Bluetooth is available
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+// Check Serial Port Profile
+#if !defined(CONFIG_BT_SPP_ENABLED)
+#error Serial Port Profile for Bluetooth is not available or not enabled. It is only available for the ESP32 chip.
+#endif
+
+BluetoothSerial SerialBT;
+
+
 #include <OneWire.h>                                // Библиотека
 // Для Bluetooth HC05 ------------------------------------------------
-#define pin 10                                      // D10: пин данных (центральный) для подлючения лузы iButton (зелёный провод у лузы DS9092)
+#define pin 13                                      // D10: пин данных (центральный) для подлючения лузы iButton (зелёный провод у лузы DS9092)
 OneWire ibutton(pin);                  
 byte addr[8];
 byte ReadID[8] = { 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x2F }; // "Универсальный" ключ. Прошивается если не приложить исходный ключ.
 // -------------------------------------------------------------------
 // Для Bluetooth HC05 ------------------------------------------------
-#include <SoftwareSerial.h>
-SoftwareSerial bluetooth(4, 5); // указываем пины rx и tx соответственно
 // -------------------------------------------------------------------
 
 const int buttonPin = 2;                          // Назначаем пин D2 на кнопку
@@ -16,9 +31,13 @@ int writeflag = 0;                                // Не пишем содер�
 int readflag = 0;                                 // Вытаскиваем из таблетки номер в массив readID, если этот флаг равен 0
 
 void setup() {  
+  // pinMode(5, INPUT); pinMode(4, OUTPUT); 
   pinMode(buttonPin, OUTPUT);
-  Serial.begin(9600);                             // Инициализируем монитор порта на скорости 9600
-  bluetooth.begin(9600);
+  Serial.begin(115200);                             // Инициализируем монитор порта на скорости 9600
+  // bluetooth.begin(9600);
+  Serial.begin(115200);
+  SerialBT.begin(device_name);  //Bluetooth device name
+  
   Serial.println("Инициализация выполнена");      // Отправляем тестовую строку в монитор порта
 }
 
@@ -101,20 +120,20 @@ void theKeyIsWrittenDown() {
 
 void loop() {
   // Для Bluetooth HC05 ------------------------------------------------
-  if (bluetooth.available()) {
-    char c = bluetooth.read(); // читаем из software-порта
+  if (SerialBT.available()) {
+    char c = SerialBT.read(); // читаем из software-порта
     Serial.print(c); // пишем в hardware-порт
-    bluetooth.write('hello'); // пишем в software-порт
+    SerialBT.write('hello'); // пишем в software-порт
   }
   if (Serial.available()) {
     char c = Serial.read(); // читаем из hardware-порта
-    bluetooth.write(c); // пишем в software-порт
+    SerialBT.write(c); // пишем в software-порт
   }
   // Для Bluetooth HC05 ------------------------------------------------
 
 
-  buttonState = digitalRead(buttonPin);             // Читаем состояние кнопки
-  if (buttonState == HIGH) readyToWriteKey();                         // Если кнопка нажата, то приступаем к записи из массива в таблетку
+  // buttonState = digitalRead(buttonPin);             // Читаем состояние кнопки
+  if (buttonState == HIGH) readyToWriteKey();        // Если кнопка нажата, то приступаем к записи из массива в таблетку
 
   if (!ibutton.search(addr)) {                     // Проверка: а может таблетка не обнаружена?
     ibutton.reset_search();
