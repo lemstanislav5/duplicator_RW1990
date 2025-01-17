@@ -18,40 +18,12 @@ BluetoothSerial SerialBT;
 OneWire ibutton(pin);                  
 
 // ----------------------------------------------
-Class eyDuplicator 
-{
-    private:
-      byte newKey[8];
-      byte prevKeu[8];
-    public: 
-      KeyDuplicator(byte startKey[8])
-      {
-        newKey = startKey;
-      }
-      void setNewKey(byte startKey[8])
-      {
-
-      }
-      byte getNewKey()
-      {
-
-      }
-      void setPrevKey(byte startKey[8])
-      {
-
-      }
-      byte getPrevKey()
-      {
-
-      }
-
-}
 
 // СОЗДАЕМ КЛАСС И ДАЛЕЕ РАБОТАЕМ С ЕГО ОБЪЕКТОМ, В КЛАСС СПРЯМЕМ ВСЕ ОБРАБОТЧИКИ ДАННЫХ
 
 byte addr[8];
 byte prevKey[8];
-byte ReadID[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; // "Универсальный" ключ. Прошивается если не приложить исходный ключ.
+byte ReadID[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; // Массив байт с нулевыми значениями
 
 const int buttonPin = 2;                          // Назначаем пин D2 на кнопку
 int buttonState = 0;                              // Переменная, в которой хранится состояние кнопки
@@ -61,7 +33,6 @@ int readflag = 0;                                 // Вытаскиваем из
 void setup() {  
   pinMode(buttonPin, OUTPUT);
   Serial.begin(115200);                           // Инициализируем монитор порта на скорости 9600
-  Serial.begin(115200);
   SerialBT.begin(device_name);                    // Bluetooth device name
   Serial.println("Инициализация выполнена");      // Отправляем тестовую строку в монитор порта
 }
@@ -78,6 +49,7 @@ void readKey() {
     Serial.print(":");                            // Пишем в порт разделитель байтов, если байт не последний
   }
   Serial.println ();                              // Красивости: отправляем пустую строку-разделитель в монитор порта, когда закончили с выводом считанного байта.
+  sendKey(ReadID);
 }
 
 void readyToWriteKey() {
@@ -143,16 +115,27 @@ void theKeyIsWrittenDown() {
     delay(2000);
 }
 
+void sendKey(byte *arr){                           // Функци отправки данных в формате char 1:211:200:167:1:0:0:56:
+  Serial.println("Начало отправки: ");
+  String key = "[";
+  for (byte i = 0; i < 8; i++) {
+    key += String((int) arr[i]);                                                    
+    if(i < 7) key += ",";                            
+  }
+  key += "]";
+  SerialBT.print(key);
+}
+
 void loop() {
   // Для Bluetooth HC05 ------------------------------------------------
-  // if (SerialBT.available()) {
-  //   char c = SerialBT.read();                       // читаем из software-порта
-  //   Serial.print(c);                                // пишем в hardware-порт
-  //   SerialBT.write('hello');                        // пишем в software-порт
-  // }
-  // if (Serial.available()) {
-  //   char c = Serial.read();                         // читаем из hardware-порта
-  //   SerialBT.write(c);                              // пишем в software-порт
+  if (SerialBT.available()) {
+    char c = SerialBT.read();                       // читаем из software-порта
+    Serial.print(c);                                // пишем в hardware-порт
+    SerialBT.write(c);                              // пишем в software-порт
+  }
+  if (Serial.available()) {
+    char c = Serial.read();                         // читаем из hardware-порта
+    SerialBT.write(c);                              // пишем в software-порт
   }
   // Для Bluetooth HC05 ------------------------------------------------
 
