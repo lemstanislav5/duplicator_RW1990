@@ -1,3 +1,5 @@
+#include <ArduinoJson.h>
+StaticJsonDocument<10> doc;                     // [JSON] Внутри скобок 200 — это емкость пула памяти в байтах.
 // Для BluetoothSerial --------------------------
 #include "BluetoothSerial.h"
 String device_name = "BTMonitor";
@@ -126,17 +128,37 @@ void sendKey(byte *arr){                           // Функци отправ�
   SerialBT.print(key);
 }
 
+String json = "";
 void loop() {
   // Для Bluetooth HC05 ------------------------------------------------
   if (SerialBT.available()) {
     char c = SerialBT.read();                       // читаем из software-порта
-    Serial.print(c);                                // пишем в hardware-порт
-    SerialBT.write(c);                              // пишем в software-порт
+    json += String(c);
   }
-  if (Serial.available()) {
-    char c = Serial.read();                         // читаем из hardware-порта
-    SerialBT.write(c);                              // пишем в software-порт
+  
+  // Проверяем наличие во входящих данных ковычек [] 
+  if(json !="" && json.length() ) {
+    if(json.indexOf("[") > -1 && json.indexOf("]") > -1){
+      Serial.println(json);
+
+      DeserializationError error = deserializeJson(doc, json);
+      // проверяем на наличе ошибок
+      if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+      } else {
+        // Serial.println(doc[0]);
+      }
+
+
+      json = "";
+    }
   }
+  // if (Serial.available()) {
+  //   char c = Serial.read();                         // читаем из hardware-порта
+  //   SerialBT.write(c);                              // пишем в software-порт
+  // }
   // Для Bluetooth HC05 ------------------------------------------------
 
 
