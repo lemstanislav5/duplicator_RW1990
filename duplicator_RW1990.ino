@@ -1,5 +1,3 @@
-#include <ArduinoJson.h>
-StaticJsonDocument<10> doc;                     // [JSON] Внутри скобок 200 — это емкость пула памяти в байтах.
 // Для BluetoothSerial --------------------------
 #include "BluetoothSerial.h"
 String device_name = "BTMonitor";
@@ -25,6 +23,7 @@ OneWire ibutton(pin);
 
 byte addr[8];
 byte prevKey[8];
+byte newKey[8];
 byte ReadID[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; // Массив байт с нулевыми значениями
 
 const int buttonPin = 2;                          // Назначаем пин D2 на кнопку
@@ -140,18 +139,6 @@ void loop() {
   if(json !="" && json.length() ) {
     if(json.indexOf("[") > -1 && json.indexOf("]") > -1){
       Serial.println(json);
-
-      DeserializationError error = deserializeJson(doc, json);
-      // проверяем на наличе ошибок
-      if (error) {
-        Serial.print(F("deserializeJson() failed: "));
-        Serial.println(error.f_str());
-        return;
-      } else {
-        // Serial.println(doc[0]);
-      }
-
-
       json = "";
     }
   }
