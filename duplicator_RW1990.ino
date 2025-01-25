@@ -22,8 +22,6 @@ OneWire ibutton(pin);
 // СОЗДАЕМ КЛАСС И ДАЛЕЕ РАБОТАЕМ С ЕГО ОБЪЕКТОМ, В КЛАСС СПРЯМЕМ ВСЕ ОБРАБОТЧИКИ ДАННЫХ
 
 byte addr[8];
-byte prevKey[8];
-byte newKey[8];
 byte ReadID[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; // Массив байт с нулевыми значениями
 
 const int buttonPin = 2;                          // Назначаем пин D2 на кнопку
@@ -49,7 +47,7 @@ void readKey() {
     Serial.print(addr[x], HEX);                   // Пишем байт в порт
     Serial.print(":");                            // Пишем в порт разделитель байтов, если байт не последний
   }
-  Serial.println ();                              // Красивости: отправляем пустую строку-разделитель в монитор порта, когда закончили с выводом считанного байта.
+  Serial.println();                              // Красивости: отправляем пустую строку-разделитель в монитор порта, когда закончили с выводом считанного байта.
   sendKey(ReadID);
 }
 
@@ -113,6 +111,7 @@ void theKeyIsWrittenDown() {
     writeflag = 0;                                  // Сбрасываем флаги
     readflag = 0;
     Serial.println ("Запись ключа закончена.");
+    SerialBT.print("&");                            // Отправляем сигнал # о готовности записи
     delay(2000);
 }
 
@@ -128,6 +127,35 @@ void sendKey(byte *arr){                           // Функци отправ�
 }
 
 String json = "";
+
+
+// char **pointer, *stringVar;
+//   stringVar = "b9";
+//   byte Var = strtol(stringVar,pointer,16);
+
+void convertWriteKeyToReadID()
+{
+  int count = 0;
+  byte arr[8];
+  String item = "";
+  int size = sizeof(ReadID) / sizeof(ReadID[0]);
+  char **pointer;
+  Serial.println(size);
+  for (int i = 0; i < json.length(); i++){ 
+      if(json[i] == ','){
+        byte num = strtol(item.c_str(),pointer,16);
+        ReadID[count] = num;
+        count++;
+        item = "";
+      } else {
+        item += json[i];
+      }
+  }
+  readflag = 1;                                   // Ставим флаг, чтобы не читать из таблетки в массив ReadID перед записью
+  writeflag = 1;                                  // Ставим флаг, чтобы писать в таблетку содержимое масива readID
+  SerialBT.print("#");                            // Отправляем сигнал # о готовности записи
+}
+
 void loop() {
   // Для Bluetooth HC05 ------------------------------------------------
   if (SerialBT.available()) {
@@ -136,9 +164,14 @@ void loop() {
   }
   
   // Проверяем наличие во входящих данных ковычек [] 
-  if(json !="" && json.length() ) {
+  if(json !="" && json.length() > 0) {
     if(json.indexOf("[") > -1 && json.indexOf("]") > -1){
+      int length = json.length();
+      json.remove(json.indexOf("["), 1);
+      json.remove(json.indexOf("]"), 1);
+      json += ",";
       Serial.println(json);
+      convertWriteKeyToReadID();
       json = "";
     }
   }
