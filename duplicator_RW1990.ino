@@ -191,7 +191,7 @@ void loop() {
     return;                                         // если нет таблетки, то выходим из loop
   }
 
-  readKey();                                        // функция постоянного чтения
+  if(readflag != 1) readKey();                                        // функция постоянного чтения
 
   if (writeflag == 1) theKeyIsWrittenDown();        // Если установлен флаг на запись в таблетку
 }
